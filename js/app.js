@@ -1,4 +1,4 @@
-// clase Producto
+
 class Producto {
     constructor(nombre, valor, descripcion, img) {
         this.nombre = nombre;
@@ -9,84 +9,82 @@ class Producto {
     }
 }
 
-// array de productos
-const productos = [
-    new Producto("Remera Básica", 690, "Algodón 100%", "./img/remera1.jpg"),
-    new Producto("Remera Estampada", 566, "Diseño único", "./img/remera2.jpg"),
-    new Producto("Remera Sport", 876, "Secado rápido", "./img/remera3.jpg"),
-    new Producto("Remera Casual", 1000, "Estilo clásico", "./img/remera4.jpg"),
-    new Producto("Remera Oversize", 790, "Tendencia juvenil", "./img/remera5.jpg"),
-    new Producto("Remera Formal", 999, "Elegancia moderna", "./img/remera6.jpg"),
-    new Producto("Remera Vintage", 899, "Estilo retro", "./img/remera7.jpg"),
-    new Producto("Remera Running", 898, "Ligera y cómoda", "./img/remera8.jpg"),
-];
+const cargarProductos = async () => {
+    try {
+        const response = await fetch('./data/productos.json');
+        if (!response.ok) {
+            throw new Error('No se pudo cargar el archivo productos.json');
+        }
+        const productosData = await response.json();
+        return productosData.map(prod => new Producto(prod.nombre, prod.valor, prod.descripcion, prod.img));
+    } catch (error) {
+        console.error('Error cargando los productos:', error);
+        return []; 
+    }
+};
 
-// cargar carrito desde localstorage
 const cargarCarrito = () => {
     const carritoGuardado = localStorage.getItem("carrito");
     return carritoGuardado ? JSON.parse(carritoGuardado) : [];
 };
 
-// guardar carrito en localstorage
 const guardarCarrito = (carrito) => {
     localStorage.setItem("carrito", JSON.stringify(carrito));
 };
 
-
 let carrito = cargarCarrito();
-
 
 const mostrarProductos = (productosFiltrados) => {
     const contenedor = document.getElementById("contenedorProductos");
 
     if (!contenedor) return;
 
-
     contenedor.innerHTML = ""; 
-
-
     if (!Array.isArray(productosFiltrados) || productosFiltrados.length === 0) {
         contenedor.innerHTML = "<p>No se encontraron productos.</p>";
         return;
     }
 
-    productosFiltrados.map((producto, index) => {
-        if (!producto.nombre || !producto.valor || !producto.img) {
-            console.warn("Producto incompleto:", producto);
+    productosFiltrados.map(({ nombre, valor, img }, index) => {
+        if (!nombre || !valor || !img) {
+            console.warn("Producto incompleto:", { nombre, valor, img });
             return;
         }
 
+        
         const divProducto = document.createElement("div");
-        divProducto.classList.add("product");
+        divProducto.classList.add("col-12", "col-sm-6", "col-md-6", "col-lg-4", "product");  
         divProducto.innerHTML = `
-            <img src="${producto.img}" alt="Imagen de ${producto.nombre}">
-            <h3>${producto.nombre}</h3>
-            <p>$${producto.valor.toFixed(2)}</p>
-            <button class="btnAgregar" data-index="${index}">AÑADIR AL CARRITO</button>
+            <div class="card mb-4" style="height: 100%;"> <!-- Agregar margen y control de altura -->
+                <img src="${img}" alt="Imagen de ${nombre}" class="card-img-top" style="height: 250px; object-fit: cover;"> <!-- Ajustar la imagen para que ocupe más espacio -->
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">${nombre}</h5>
+                    <p class="card-text">$${valor.toFixed(2)}</p>
+                    <button class="btn btn-primary btnAgregar" data-index="${index}">AÑADIR AL CARRITO</button>
+                </div>
+            </div>
         `;
         contenedor.appendChild(divProducto);
     });
 
-   
     document.querySelectorAll(".btnAgregar").forEach(boton => {
         boton.addEventListener("click", (evento) => {
             const index = evento.target.getAttribute("data-index");
-            agregarAlCarrito(productos[index]);
+            agregarAlCarrito(productosFiltrados[index]);
         });
     });
 };
 
-
-const agregarAlCarrito = (producto) => {
-    const productoExistente = carrito.find((p) => p.nombre === producto.nombre);
+const agregarAlCarrito = ({ nombre, valor, descripcion, img }) => {
+    const productoExistente = carrito.find((p) => p.nombre === nombre);
     if (productoExistente) {
-        productoExistente.cantidad += 1; 
+        productoExistente.cantidad += 1;
     } else {
-        carrito.push({ ...producto });
+        carrito.push({ nombre, valor, descripcion, img, cantidad: 1 });
     }
     guardarCarrito(carrito);
-    actualizarCantidadCarrito(); 
-    mostrarCarrito(); 
+    actualizarCantidadCarrito();
+    mostrarCarrito();
 };
 
 
@@ -94,7 +92,6 @@ const mostrarCarrito = () => {
     const contenedorCarrito = document.getElementById("carritoItems");
     if (!contenedorCarrito) return;
 
-    // Limpia el carrito
     contenedorCarrito.innerHTML = "";
 
     if (!carrito || carrito.length === 0) {
@@ -104,17 +101,17 @@ const mostrarCarrito = () => {
     }
 
     let total = 0;
-    carrito.map((producto, index) => {
+    carrito.map(({ nombre, valor, img, cantidad }, index) => {
         const divItem = document.createElement("div");
         divItem.classList.add("carritoItem");
         divItem.innerHTML = `
-            <img src="${producto.img}" alt="${producto.nombre}" class="carritoImg">
+            <img src="${img}" alt="${nombre}" class="carritoImg">
             <div>
-                <h3>${producto.nombre}</h3>
-                <p>$${producto.valor.toFixed(2)}</p>
+                <h3>${nombre}</h3>
+                <p>$${valor.toFixed(2)}</p>
                 <div>
                     <button class="btnRestar" data-index="${index}">-</button>
-                    <span>${producto.cantidad}</span>
+                    <span>${cantidad}</span>
                     <button class="btnSumar" data-index="${index}">+</button>
                 </div>
             </div>
@@ -122,13 +119,11 @@ const mostrarCarrito = () => {
         `;
         contenedorCarrito.appendChild(divItem);
 
-        total += producto.valor * producto.cantidad;
+        total += valor * cantidad;
     });
 
-    
     document.getElementById("totalCarrito").textContent = `$${total.toFixed(2)}`;
 
-    
     document.querySelectorAll(".btnRestar").forEach(boton => {
         boton.addEventListener("click", (evento) => {
             const index = evento.target.getAttribute("data-index");
@@ -143,7 +138,6 @@ const mostrarCarrito = () => {
         });
     });
 
-   
     document.querySelectorAll(".btnEliminar").forEach(boton => {
         boton.addEventListener("click", (evento) => {
             const index = evento.target.getAttribute("data-index");
@@ -152,7 +146,6 @@ const mostrarCarrito = () => {
     });
 };
 
-
 const restarCantidad = (index) => {
     if (carrito[index].cantidad > 1) {
         carrito[index].cantidad -= 1;
@@ -160,33 +153,34 @@ const restarCantidad = (index) => {
         eliminarDelCarrito(index);
     }
     guardarCarrito(carrito);
-    actualizarCantidadCarrito(); 
+    actualizarCantidadCarrito();
     mostrarCarrito();
 };
 
-// sumar  producto en el carrito
 const sumarCantidad = (index) => {
     carrito[index].cantidad += 1;
     guardarCarrito(carrito);
-    actualizarCantidadCarrito(); 
+    actualizarCantidadCarrito();
     mostrarCarrito();
 };
 
-// eliminar  producto del carrito
 const eliminarDelCarrito = (index) => {
     carrito.splice(index, 1);
     guardarCarrito(carrito);
-    actualizarCantidadCarrito(); 
+    actualizarCantidadCarrito();
     mostrarCarrito();
 };
 
-
 const actualizarCantidadCarrito = () => {
-    const cantidadCarrito = carrito.reduce((total, producto) => total + producto.cantidad, 0);
+    const cantidadCarrito = carrito.reduce((total, { cantidad }) => total + cantidad, 0);
     document.getElementById("cantidadCarrito").textContent = cantidadCarrito;
 };
 
-// mostrar productos iniciales
-mostrarProductos(productos);
-mostrarCarrito();
-actualizarCantidadCarrito(); 
+const init = async () => {
+    const productosCargados = await cargarProductos();
+    mostrarProductos(productosCargados);
+    mostrarCarrito();
+    actualizarCantidadCarrito();
+};
+
+init();

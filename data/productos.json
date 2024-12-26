@@ -1,0 +1,50 @@
+[
+  {
+      "nombre": "Remera Básica",
+      "valor": 690,
+      "descripcion": "Algodón 100%",
+      "img": "./img/remera1.jpg"
+  },
+  {
+      "nombre": "Remera Estampada",
+      "valor": 566,
+      "descripcion": "Diseño único",
+      "img": "./img/remera2.jpg"
+  },
+  {
+      "nombre": "Remera Sport",
+      "valor": 876,
+      "descripcion": "Secado rápido",
+      "img": "./img/remera3.jpg"
+  },
+  {
+      "nombre": "Remera Casual",
+      "valor": 1000,
+      "descripcion": "Estilo clásico",
+      "img": "./img/remera4.jpg"
+  },
+  {
+      "nombre": "Remera Oversize",
+      "valor": 790,
+      "descripcion": "Tendencia juvenil",
+      "img": "./img/remera5.jpg"
+  },
+  {
+      "nombre": "Remera Formal",
+      "valor": 999,
+      "descripcion": "Elegancia moderna",
+      "img": "./img/remera6.jpg"
+  },
+  {
+      "nombre": "Remera Vintage",
+      "valor": 899,
+      "descripcion": "Estilo retro",
+      "img": "./img/remera7.jpg"
+  },
+  {
+      "nombre": "Remera Running",
+      "valor": 898,
+      "descripcion": "Ligera y cómoda",
+      "img": "./img/remera8.jpg"
+  }
+]
